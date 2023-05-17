@@ -1,23 +1,23 @@
 type Key = string | number | symbol;
 
-interface Schema<Result> {
+export interface Schema<Result = any> {
   v: Key;
   parse(data: unknown): Result;
 }
 
-type InferResult<T extends Schema<any>> = T extends Schema<infer R> ? R : never;
+export type InferResult<T extends Schema> = T extends Schema<infer R> ? R : never;
 
-interface UpdatePath<FromSchema extends Schema<any>, ToSchema extends Schema<any>> {
-  from: FromSchema;
-  to: ToSchema;
-  update: (fromSchema: InferResult<FromSchema>) => InferResult<ToSchema>;
+export interface Evolution<From extends Schema, To extends Schema> {
+  from: From;
+  to: To;
+  update: (fromSchema: InferResult<From>) => InferResult<To>;
 }
 
-export function createUpdatePath<From extends Schema<any>, To extends Schema<any>>(
+export function createUpdatePath<From extends Schema, To extends Schema>(
   from: From,
   to: To,
-  updateFn: UpdatePath<From, To>['update']
-): UpdatePath<From, To> {
+  updateFn: Evolution<From, To>['update']
+): Evolution<From, To> {
   return {
     from,
     to,
@@ -26,7 +26,7 @@ export function createUpdatePath<From extends Schema<any>, To extends Schema<any
 }
 
 export function findShortestPath<
-  Graph extends UpdatePath<any, any>,
+  Graph extends Evolution<any, any>,
   From extends Graph['from'],
   To extends Graph['to'],
   FromV extends From['v'],
@@ -93,7 +93,7 @@ export function findShortestPath<
 }
 
 export function convert<
-  Graph extends UpdatePath<Schema<any>, Schema<any>>,
+  Graph extends Evolution<Schema, Schema>,
   From extends Graph['from'],
   To extends Graph['to'],
   FromV extends From['v'],
