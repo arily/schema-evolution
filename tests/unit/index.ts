@@ -72,36 +72,17 @@ describe('create node', () => {
   })
 })
 
-const paths = [
-  createEdge(schema1, schema2, (from) => ({
-    ...from,
-    v: schema2.v,
-    test2: 'test2',
-  })),
-  createEdge(schema2, schema3, (from) => ({
-    ...from,
-    v: schema3.v,
-    test3: 'test3',
-  })),
-  createEdge(schema3, schema4, (from) => ({
-    ...from,
-    v: schema4.v,
-    test4: 'test4',
-  })),
-  <Edge<typeof schema3, typeof schema2>>{
-    from: schema3,
-    to: schema2,
-    update(from) {
-      return {
-        ...from,
-        v: schema2.v,
-      }
-    },
-  },
-]
 describe('graph compiler', () => {
   it('should compile', () => {
-    expect(() => compileGraph(paths)).to.not.throw()
+    expect(() => compileGraph([
+      createEdge(schema1, schema2, schema2.parse),
+      createEdge(schema3, schema4, schema4.parse),
+      <Edge<typeof schema3, typeof schema1>>{
+        from: schema3,
+        to: schema1,
+        update: schema1.parse
+      },
+    ])).to.not.throw()
   })
 
   it('should detect loop', () => {
@@ -136,7 +117,33 @@ describe('graph compiler', () => {
 })
 
 describe('path finder', () => {
-  const compiled = compileGraph(paths)
+  const compiled = compileGraph([
+    createEdge(schema1, schema2, (from) => ({
+      ...from,
+      v: schema2.v,
+      test2: 'test2',
+    })),
+    createEdge(schema2, schema3, (from) => ({
+      ...from,
+      v: schema3.v,
+      test3: 'test3',
+    })),
+    createEdge(schema3, schema4, (from) => ({
+      ...from,
+      v: schema4.v,
+      test4: 'test4',
+    })),
+    <Edge<typeof schema3, typeof schema2>>{
+      from: schema3,
+      to: schema2,
+      update(from) {
+        return {
+          ...from,
+          v: schema2.v,
+        }
+      },
+    },
+  ])
   it('should find adjacent path', () => {
     expect(findShortestPath(compiled, schema1.v, schema2.v)).to.not.equal(null)
   })
@@ -190,13 +197,12 @@ describe('path finder', () => {
 })
 
 describe('convert', () => {
-  const compiled = compileGraph([
-    createEdge(schema1, schema2, schema2.parse),
-    createEdge(schema2, schema3, schema3.parse),
-    createEdge(schema3, schema4, schema4.parse),
-  ])
-
   it('should able to migrate', () => {
+    const compiled = compileGraph([
+      createEdge(schema1, schema2, schema2.parse),
+      createEdge(schema2, schema3, schema3.parse),
+      createEdge(schema3, schema4, schema4.parse),
+    ])
     expect(
       migrate(compiled, schema1.v, schema4.v, schema1.parse({}))
     ).to.deep.equal(
