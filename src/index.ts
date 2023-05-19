@@ -4,8 +4,8 @@
 
  * - The Key type is defined as a union of string, number, and symbol.
  * - The Schema interface represents a schema with a v property of type Key and a parse method that takes an unknown data and returns a specified Result type.
- * - The InferResult type infers the Result type from a given Schema type.
- * - The Vertex interface represents an edge in the graph, connecting two schemas (From and To). It has from and to properties representing the source and target schemas respectively, and an update method that transforms data of type InferResult<From> to InferResult<To>.
+ * - The Parsed type infers the Result type from a given Schema type.
+ * - The Edge interface represents an edge in the graph, connecting two schemas (From and To). It has from and to properties representing the source and target schemas respectively, and an update method that transforms data of type InferResult<From> to InferResult<To>.
  * - The createEdge function creates an edge between two schemas and defines the update function for the edge.
  * - The compileGraph function takes an array of edges and returns the adjacency map and the original graph.
  * - The findShortestPath function finds the shortest path between two vertices in the graph using breadth-first search (BFS) algorithm. It takes the compiled graph, the starting vertex, and the target vertex as input.
@@ -21,12 +21,12 @@ export interface Schema<Result = any> {
   parse(data: unknown): Result;
 }
 
-export type InferResult<T extends Schema> = T extends Schema<infer R> ? R : never;
+export type Parsed<T extends Schema> = ReturnType<T['parse']>
 
 export interface Edge<From extends Schema, To extends Schema> {
   from: From;
   to: To;
-  update: (fromSchema: InferResult<From>) => InferResult<To>;
+  update: (fromSchema: Parsed<From>) => Parsed<To>;
 }
 
 export function createEdge<From extends Schema, To extends Schema>(
@@ -136,7 +136,7 @@ export function migrate<
   compiled: ReturnType<typeof compileGraph<Graph>>,
   from: FromEdge,
   to: Exclude<ToEdge, FromEdge>,
-  data: InferResult<From>
+  data: Parsed<From>
 ) {
   const found = findShortestPath(compiled, from, to);
 
@@ -144,5 +144,5 @@ export function migrate<
     throw new Error('No path found');
   }
 
-  return found.reduce((acc, cur) => cur.update(acc), data as unknown) as unknown as InferResult<To>;
+  return found.reduce((acc, cur) => cur.update(acc), data as unknown) as unknown as Parsed<To>;
 }

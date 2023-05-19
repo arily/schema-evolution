@@ -197,7 +197,7 @@ describe('path finder', () => {
 })
 
 describe('convert', () => {
-  it('should able to migrate', () => {
+  it('should able to migrate schema', () => {
     const compiled = compileGraph([
       createEdge(schema1, schema2, schema2.parse),
       createEdge(schema2, schema3, schema3.parse),
