@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "outDir": "./dist-cjs",
+    "outDir": "./cjs",
     "module": "commonjs" /* Specify what module code is generated. */
   }
 }

@@ -1,9 +1,9 @@
 {
   "name": "schema-evolution",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SchemaEvolution is a schema migration library that focuses on facilitating the evolution of schemas over time. It provides a set of tools and utilities to manage and transition between different versions of schemas within JavaScript applications.",
-  "main": "dist-cjs/index.js",
-  "module": "dist-esm/index.js",
+  "main": "cjs/index.js",
+  "module": "esm/index.js",
   "author": "arily<a@ri.mk>",
   "license": "MIT",
   "private": false,
@@ -19,9 +19,11 @@
     "test": "intern"
   },
   "files": [
-    "dist-cjs/**/*",
-    "dist-esm/**/*"
+    "cjs/**/*",
+    "esm/**/*",
+    "type/**/*"
   ],
+  "types": "type/index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/arily/schema-evolution.git"
