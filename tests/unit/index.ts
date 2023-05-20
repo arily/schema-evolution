@@ -90,7 +90,6 @@ describe('graph compiler', () => {
       compileGraph([
         createEdge(
           schema2,
-          // @ts-expect-error test purpose
           schema2,
           schema2.parse
         ),
@@ -203,10 +202,10 @@ describe('convert', () => {
       createEdge(schema2, schema3, schema3.parse),
       createEdge(schema3, schema4, schema4.parse),
     ])
-    expect(
-      migrate(compiled, schema1.v, schema4.v, schema1.parse({}))
-    ).to.deep.equal(
-      schema4.parse(schema3.parse(schema2.parse(schema1.parse({}))))
-    )
+    const migrated = migrate(compiled, schema1.v, 4, schema1.parse({}))
+    expect(migrated)
+      .to.deep.equal(
+        schema4.parse(schema3.parse(schema2.parse(schema1.parse({}))))
+      )
   })
 })
