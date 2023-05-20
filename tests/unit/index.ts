@@ -10,6 +10,7 @@ import {
   Edge,
   compileGraph,
   hops,
+  createPipeline,
 } from '../../src'
 const schema1 = {
   v: 'base',
@@ -195,7 +196,7 @@ describe('path finder', () => {
   })
 })
 
-describe('convert', () => {
+describe('migrate', () => {
   it('should able to migrate schema', () => {
     const compiled = compileGraph([
       createEdge(schema1, schema2, schema2.parse),
@@ -208,4 +209,28 @@ describe('convert', () => {
         schema4.parse(schema3.parse(schema2.parse(schema1.parse({}))))
       )
   })
+})
+
+describe('pipeline', () => {
+  let pipeline: ReturnType<typeof createPipeline>
+  it('should able to create pipeline', () => {
+    const compiled = compileGraph([
+      createEdge(schema1, schema2, schema2.parse),
+      createEdge(schema2, schema3, schema3.parse),
+      createEdge(schema3, schema4, schema4.parse),
+    ])
+    pipeline = createPipeline(compiled, schema1.v, 4)
+  })
+  it('give developers the ability to inspect and log out the pipeline', () => {
+    expect(hops(pipeline.path)?.map(String).join(' -> '))
+    .to.equal('base -> 2 -> 3 -> 4')
+  })
+
+  it('can migrate schemas just like `migrate` function', () => {
+    expect(pipeline.migrate(schema1.parse({})))
+      .to.deep.equal(
+        schema4.parse(schema3.parse(schema2.parse(schema1.parse({}))))
+      )
+  })
+
 })

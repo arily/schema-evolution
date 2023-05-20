@@ -1,4 +1,5 @@
 type Key = string | number | symbol
+type Last<T extends readonly any[]> = T extends [...infer _, infer LastElement] ? LastElement : never;
 
 export interface Schema<Result = any> {
   v: Key
@@ -109,16 +110,16 @@ export function findShortestPath<
 export function hops(pathResult?: readonly Edge<Schema, Schema>[]) {
   return pathResult
     ? pathResult.length > 1
-      ? [...pathResult.map((edge) => edge.from.v), pathResult.at(-1)?.to] as const
+      ? [...pathResult.map((edge) => edge.from.v), pathResult.at(-1)?.to.v] as const
       : [] as const
     : undefined
 }
 
-export function reducePath<
-  G extends readonly Edge<Schema, Schema>[],
-  TFrom extends Parsed<G[0]['from']>,
->(path: G, data: TFrom) {
-  return path.reduce((acc, cur) => cur.update(acc), data) as unknown
+function reducePath<GS extends readonly Edge<Schema, Schema>[]>(
+  path: GS,
+  data: Parsed<GS[0]['from']>
+): Parsed<GS extends [...infer Rest, Edge<Schema, infer To>] ? To : never> {
+  return path.reduce((acc, cur) => cur.update(acc), data);
 }
 
 export function migrate<
@@ -139,3 +140,35 @@ export function migrate<
 
   return reducePath(found, data) as Parsed<Extract<Graph['to'], { v: ToV }>>;
 }
+
+export function createPipeline<
+  Graph extends Edge<Schema, Schema>,
+  FromV extends Graph['from']['v'],
+  ToV extends Graph['to']['v']
+>(
+  compiled: CompiledGraph<Graph>,
+  from: FromV,
+  to: ToV,
+) {
+  const found = findShortestPath(compiled, from, to);
+
+  if (!found) {
+    throw new Error('No path found');
+  }
+
+  return {
+    path: found,
+    migrate(data: Parsed<Extract<Graph['from'], { v: FromV }>>): Parsed<Extract<Graph['to'], { v: ToV }>> {
+      return reducePath(found, data);
+    }
+  }
+}
+
+// export type Destinations<Graph extends Edge<Schema, Schema>, From extends Graph['from'], ToV extends Key[] = []> =
+//   Graph extends { from: From }
+//     ? Graph['to']['v'] | Extract<Graph, { to: { v: Graph['from']['v'] } }>
+//     : Graph extends Edge<Schema, infer To>
+//       ? Destinations<Graph | Edge<From, To>, From, [...ToV, Graph['to']['v']]>
+//       : never;
+
+
