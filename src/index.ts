@@ -109,9 +109,7 @@ export function findShortestPath<
 
 export function hops(pathResult?: readonly Edge<Schema, Schema>[]) {
   return pathResult
-    ? pathResult.length > 1
-      ? [...pathResult.map((edge) => edge.from.v), pathResult.at(-1)?.to.v] as const
-      : [] as const
+    ? [...pathResult.map((edge) => edge.from.v), pathResult.at(-1)?.to.v] as const
     : undefined
 }
 

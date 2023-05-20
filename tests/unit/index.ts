@@ -196,6 +196,10 @@ describe('path finder', () => {
   })
 })
 
+describe('hops',() => {
+  // TODO
+})
+
 describe('migrate', () => {
   it('should able to migrate schema', () => {
     const compiled = compileGraph([
